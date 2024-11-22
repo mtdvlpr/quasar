@@ -62,7 +62,7 @@
     "ci-info": "3.7.1",
     "compression-webpack-plugin": "10.0.0",
     "copy-webpack-plugin": "11.0.0",
-    "cross-spawn": "7.0.3",
+    "cross-spawn": "^7.0.6",
     "css-loader": "6.7.3",
     "css-minimizer-webpack-plugin": "4.2.2",
     "cssnano": "5.1.14",
