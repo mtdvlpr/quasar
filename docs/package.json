@@ -8,7 +8,7 @@
   "type": "module",
   "scripts": {
     "dev": "quasar dev",
-    "build": "node build/search.js && quasar build",
+    "build": "node build/search.js && quasar build -m pwa",
     "lint": "eslint --ext .js,.vue ./ --report-unused-disable-directives --fix",
     "test": "echo \"No test specified\" && exit 0"
   },
