@@ -2,12 +2,9 @@
  * Manages headings
  */
 
-const { slugify } = require('../utils')
+import { slugify } from '../utils.js'
 
 const titleRE = /<\/?[^>]+(>|$)/g
-const apiRE = /^<doc-api /
-const apiNameRE = /file="([^"]+)"/
-const installationRE = /^<doc-installation /
 
 function parseContent (str) {
   const title = String(str)
@@ -20,8 +17,8 @@ function parseContent (str) {
   }
 }
 
-module.exports = function (md) {
-  md.renderer.rules.heading_open = (tokens, idx, options, env, self) => {
+export default function mdPluginHeading (md) {
+  md.renderer.rules.heading_open = (tokens, idx, options, _env, self) => {
     const token = tokens[ idx ]
 
     const content = tokens[ idx + 1 ]
@@ -35,29 +32,12 @@ module.exports = function (md) {
     token.attrSet('@click', `copyHeading(\`${id}\`)`)
 
     if (token.tag === 'h2') {
-      md.$data.toc.push({ id, title })
+      md.$frontMatter.toc.push({ id, title })
     }
     else if (token.tag === 'h3') {
-      md.$data.toc.push({ id, title, sub: true })
+      md.$frontMatter.toc.push({ id, title, sub: true })
     }
 
     return self.renderToken(tokens, idx, options)
-  }
-
-  md.renderer.rules.html_block = function (tokens, idx /*, options, env */) {
-    const token = tokens[ idx ]
-
-    if (apiRE.test(token.content) === true) {
-      const match = apiNameRE.exec(token.content)
-      if (match !== null) {
-        const title = `${ match[ 1 ] } API`
-        md.$data.toc.push({ id: slugify(title), title, deep: true })
-      }
-    }
-    else if (installationRE.test(token.content) === true) {
-      md.$data.toc.push({ id: 'installation', title: 'Installation', deep: true })
-    }
-
-    return tokens[ idx ].content
   }
 }

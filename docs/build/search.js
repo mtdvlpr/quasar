@@ -1,23 +1,24 @@
-const fs = require('fs')
-const { join } = require('path')
-const fg = require('fast-glob')
-const path = require('path')
-const md = require('markdown-ast')
-const { parseFrontMatter } = require('./md/md-parse-utils.js')
+import fs from 'node:fs'
+import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import fg from 'fast-glob'
+import md from 'markdown-ast'
 
-const { slugify, capitalize } = require('./utils')
+import { parseFrontMatter } from './md/md-parse-utils.js'
 
-const apiRE = /<doc-api .*file="([^"]+)".*\n/
-const installationRE = /<doc-installation /
+import { slugify, capitalize } from './utils.js'
+
 const hiddenPageRE = /[\\/]__[a-zA-Z0-9_-]+\.md$/
 
-const mdPagesDir = join(__dirname, '../src/pages')
+const thisFolder = fileURLToPath(new URL('.', import.meta.url))
+
+const mdPagesDir = join(thisFolder, '../src/pages')
 const mdPagesLen = mdPagesDir.length + 1
 const mdPagesList = fg.sync(join(mdPagesDir, '**/*.md'))
   .filter(file => hiddenPageRE.test(file) === false)
   .map(key => {
     if (key.indexOf('elements') !== -1) {
-      console.log(key)
+      console.error('Not element:', key)
     }
     const parts = key.substring(mdPagesLen, key.length - 3).split('/')
     const len = parts.length
@@ -49,7 +50,7 @@ function parseRank (rank) {
 }
 
 const createFolder = folder => {
-  const dir = path.join(__dirname, '../..', folder)
+  const dir = join(thisFolder, '../..', folder)
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir)
   }
@@ -102,7 +103,7 @@ const addItem = (entries, item) => {
 
 // returns the contents of the associated file
 const getFileContents = (mdPath) => {
-  const page = path.resolve(__dirname, mdPath)
+  const page = resolve(thisFolder, mdPath)
   return fs.readFileSync(page, {
     encoding: 'utf8'
   })
@@ -152,9 +153,12 @@ const processNode = (node, prefix = '') => {
     node.type === 'codeSpan') {
     text.push(prefix + node.text)
   }
+  else if (node.type === 'linkDef') {
+    // do nothing
+  }
   else {
     // unknown/unprocessed node type
-    console.log(node)
+    console.error('Unprocessed:', node)
   }
 
   return { text: text.join(' ').replace(/\n/g, ''), type }
@@ -247,28 +251,6 @@ function processPage (page, entries) {
     anchor: 'introduction'
   })
 
-  // handle API card (deep heading)
-  const apiMatches = contents.match(apiRE)
-  if (apiMatches) {
-    const name = apiMatches[ 1 ] + ' API'
-    addItem(entries, {
-      ...entryItem,
-      l1: name,
-      anchor: slugify(name),
-      content: null
-    })
-  }
-
-  // handle Installation card (deep heading)
-  if (installationRE.test(contents) === true) {
-    addItem(entries, {
-      ...entryItem,
-      l1: 'Installation',
-      anchor: 'installation',
-      content: null
-    })
-  }
-
   addItem(entries, entryItem)
 
   // get markdown ast
@@ -291,8 +273,15 @@ const run = () => {
     processPage(page, entries)
   })
 
-  const fileName = path.resolve(__dirname, '../dist/indices.json')
+  const fileName = resolve(thisFolder, '../dist/indices.json')
   const content = JSON.stringify(entries, null, 2)
+
+  try {
+    // create the folder if it doesn't exists yet
+    fs.mkdirSync(resolve(thisFolder, '../dist'))
+  }
+  catch (_) {}
+
   fs.writeFileSync(fileName, content, () => {})
 
   const end = new Date().getTime()

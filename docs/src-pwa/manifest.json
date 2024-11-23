@@ -1,7 +1,7 @@
 {
-  "name": "Quasar v2 Docs",
-  "short_name": "Quasar v2",
-  "description": "Quasar Framework v2 Documentation",
+  "name": "Quasar Legacy App Docs",
+  "short_name": "Quasar Legacy App",
+  "description": "Quasar Legacy App Documentation",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#000000",

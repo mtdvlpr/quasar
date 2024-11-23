@@ -91,8 +91,8 @@ import {
 import DocLink from 'src/components/DocLink.vue'
 import DocPageToc from './DocPageToc.vue'
 
-import getMeta from 'assets/get-meta'
-import { useDocStore } from './store'
+import getMeta from 'assets/get-meta.js'
+import { useDocStore } from './store/index.js'
 
 const props = defineProps({
   title: String,
@@ -105,9 +105,7 @@ const props = defineProps({
 
   toc: Array,
   related: Array,
-  nav: Array,
-
-  scope: Object
+  nav: Array
 })
 
 useMeta(
@@ -131,7 +129,7 @@ const tocClass = computed(() =>
 <style lang="sass">
 .doc-page
   &__content
-    padding: 80px 42px
+    padding: 32px 42px
     line-height: 1.5em
 
     @media (max-width: 1300px)

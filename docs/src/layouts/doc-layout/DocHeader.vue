@@ -1,6 +1,21 @@
 <template>
-  <q-header class="doc-header header-toolbar doc-brand" bordered :height-hint="128">
+  <q-header class="doc-header header-toolbar doc-brand row justify-center" bordered :height-hint="128">
     <q-toolbar class="doc-header__primary q-pl-lg q-pr-md no-wrap items-stretch">
+      <div class="doc-header-icon-links row no-wrap items-center">
+        <q-btn
+          class="header-btn doc-header__leftmost q-mr-xs lt-1300"
+          flat
+          round
+          icon="menu"
+          aria-label="Menu"
+          :aria-expanded="docStore.state.value.menuDrawer ? 'true' : 'false'"
+          aria-controls="menu-drawer"
+          @click="docStore.toggleMenuDrawer"
+        >
+          <q-tooltip>Menu</q-tooltip>
+        </q-btn>
+      </div>
+
       <router-link to="/" class="doc-header__logo row items-center no-wrap cursor-pointer">
         <img
           class="doc-header__logo-img"
@@ -18,18 +33,16 @@
         >
       </router-link>
 
-      <div class="doc-header__primary-left-spacer gt-lg" />
+      <q-space />
 
-      <doc-header-text-links
-        class="doc-header__links col text-size-16 gt-700"
-        :menu="primaryToolbarLinks"
-        mq-prefix="gt"
-        nav-class="text-uppercase text-size-16 letter-spacing-300"
+      <doc-header-icon-links
+        class="gt-860"
+        :menu="socialLinks.children"
       />
 
       <doc-search />
 
-      <div v-if="showThemeChanger" class="doc-header-icon-links q-ml-sm row no-wrap items-center">
+      <div class="doc-header-icon-links q-ml-sm row no-wrap items-center">
         <q-btn
           class="header-btn"
           type="a"
@@ -39,40 +52,6 @@
           @click="docStore.toggleDark"
         />
       </div>
-    </q-toolbar>
-
-    <q-toolbar class="doc-header__secondary q-pl-lg q-pr-md no-wrap">
-      <q-btn
-        class="header-btn doc-header__leftmost q-mr-xs lt-1300"
-        flat round
-        icon="menu"
-        @click="docStore.toggleMenuDrawer"
-      />
-
-      <div class="doc-header__secondary-left-spacer gt-lg" />
-
-      <div class="doc-header__links col row items-center no-wrap">
-        <doc-header-text-links
-          :menu="secondaryToolbarLinks"
-          nav-class="text-size-14 letter-spacing-100"
-          mq-prefix="gt"
-        />
-        <doc-header-text-links
-          :menu="moreLinks"
-          nav-class="text-size-14 letter-spacing-100 lt-1400"
-          mq-prefix="lt"
-        />
-      </div>
-
-      <doc-header-icon-links
-        class="gt-1310"
-        :menu="socialLinks.children"
-      />
-
-      <doc-header-text-links
-        :menu="versionLinks"
-        nav-class="text-size-14 letter-spacing-100 doc-header__version q-ml-sm"
-      />
 
       <div v-if="hasToc" class="doc-header-icon-links q-ml-sm lt-md row no-wrap items-center">
         <q-btn
@@ -80,8 +59,13 @@
           flat
           round
           :icon="mdiFolderPound"
+          aria-label="Table of Contents"
+          :aria-expanded="docStore.state.value.tocDrawer ? 'true' : 'false'"
+          aria-controls="toc-drawer"
           @click="docStore.toggleTocDrawer"
-        />
+        >
+        <q-tooltip>Table of Contents</q-tooltip>
+      </q-btn>
       </div>
     </q-toolbar>
   </q-header>
@@ -91,14 +75,13 @@
 import { computed } from 'vue'
 import { mdiCompare, mdiFolderPound } from '@quasar/extras/mdi-v6'
 
-import { versionLinks, primaryToolbarLinks, secondaryToolbarLinks, moreLinks } from 'src/assets/links.header'
-import { socialLinks } from 'src/assets/links.social'
+import { socialLinks } from 'src/assets/links.social.js'
 
 import DocSearch from './DocSearch.vue'
-import DocHeaderTextLinks from './DocHeaderTextLinks.vue'
+// import DocHeaderTextLinks from './DocHeaderTextLinks.vue'
 import DocHeaderIconLinks from './DocHeaderIconLinks.vue'
 
-import { useDocStore } from './store'
+import { useDocStore } from './store/index.js'
 const docStore = useDocStore()
 
 const logo = computed(() => {
@@ -109,7 +92,6 @@ const logo = computed(() => {
   }
 })
 
-const showThemeChanger = computed(() => docStore.$route.meta.dark !== true)
 const hasToc = computed(() => docStore.$route.meta.fullwidth !== true && docStore.$route.meta.fullscreen !== true && docStore.state.value.toc.length !== 0)
 </script>
 
@@ -119,10 +101,7 @@ const hasToc = computed(() => docStore.$route.meta.fullwidth !== true && docStor
 
   &__primary
     height: 72px
-    border-bottom: 1px solid $separator-color
-
-  &__secondary
-    height: 55px
+    max-width: 2200px
 
   &__logo-img
     transform: rotate(0deg)
@@ -149,8 +128,6 @@ const hasToc = computed(() => docStore.$route.meta.fullwidth !== true && docStor
    */
   &__primary-left-spacer
     width: 198px
-  &__secondary-left-spacer
-    width: 296px
 
   @media (max-width: 320px)
     .q-btn
@@ -220,7 +197,7 @@ body.body--dark
   .doc-header-icon-links
     color: $brand-primary
 
-$mq-list: 510, 600, 750, 860, 910, 1000, 1060, 1130, 1190, 1300 /* drawer */, 1310, 1400
+$mq-list: 860 /* social-links */, 1300 /* drawer */
 @each $query in $mq-list
   @media (min-width: #{$query}px)
     .lt-#{$query}

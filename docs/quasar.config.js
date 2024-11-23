@@ -1,14 +1,10 @@
+import { defineConfig } from '#q-app/wrappers'
 
-const mdPlugin = require('./build/md')
-const examplesPlugin = require('./build/examples')
-const manualChunks = require('./build/chunks')
+import mdPlugin from './build/md/index.js'
+import examplesPlugin from './build/examples.js'
+import manualChunks from './build/chunks.js'
 
-module.exports = ctx => ({
-  eslint: {
-    warnings: true,
-    errors: true
-  },
-
+export default defineConfig(ctx => ({
   boot: [
     { path: 'gdpr', server: false }
   ],
@@ -25,8 +21,8 @@ module.exports = ctx => ({
     // rebuildCache: true,
 
     env: {
-      DOCS_BRANCH: 'dev',
-      SEARCH_INDEX: 'quasar-v2'
+      DOCS_BRANCH: 'legacy-v2-app',
+      SEARCH_INDEX: 'quasar-legacy-app'
     },
 
     viteVuePluginOptions: {
@@ -35,13 +31,18 @@ module.exports = ctx => ({
 
     vitePlugins: [
       mdPlugin,
-      examplesPlugin(ctx.prod)
+      examplesPlugin(ctx.prod),
+      [ 'vite-plugin-checker', {
+        eslint: {
+          lintCommand: 'eslint --report-unused-disable-directives "./**/*.{js,mjs,cjs,vue}"'
+        }
+      }, { server: false } ]
     ],
 
-    extendViteConf (config, { isClient }) {
+    extendViteConf (viteConf, { isClient }) {
       if (ctx.prod && isClient) {
-        config.build.chunkSizeWarningLimit = 650
-        config.build.rollupOptions = {
+        viteConf.build.chunkSizeWarningLimit = 650
+        viteConf.build.rollupOptions = {
           output: { manualChunks }
         }
       }
@@ -58,6 +59,9 @@ module.exports = ctx => ({
   framework: {
     iconSet: 'svg-mdi-v6',
 
+    devTreeshaking: true,
+    autoImportVueExtensions: [ 'vue', 'md' ],
+
     config: {
       loadingBar: {
         color: 'brand-primary',
@@ -65,43 +69,20 @@ module.exports = ctx => ({
       }
     },
 
-    components: [
-      'QMarkupTable', // required md-plugin-table
-      'QBtn', // used directly in some .md files
-      'QBadge', // used directly in some .md files
-      'QSeparator' // used directly in some .md files
-    ],
-
     plugins: [
-      'AddressbarColor',
-      'AppFullscreen',
-      'AppVisibility',
-      'BottomSheet',
       'Cookies',
       'Dark',
-      'Dialog',
       'Loading',
-      'LoadingBar',
       'LocalStorage',
       'Meta',
-      'Notify',
-      'Platform',
-      'Screen',
-      'SessionStorage'
+      'Notify'
     ]
   },
 
   animations: [ 'fadeIn', 'fadeOut' ],
 
-  ssr: {
-    pwa: ctx.prod,
-    prodPort: 3111,
-    middlewares: [
-      'render'
-    ]
-  },
-
   pwa: {
+    workboxMode: 'GenerateSW',
     injectPwaMetaTags: false,
     swFilename: 'service-worker.js',
 
@@ -119,4 +100,4 @@ module.exports = ctx => ({
       })
     }
   }
-})
+}))

@@ -2,8 +2,8 @@ import { computed, inject, provide, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 
-import injectToc from './inject-toc'
-import injectScroll from './inject-scroll'
+import injectToc from './inject-toc.js'
+import injectScroll from './inject-scroll.js'
 
 export const docStoreKey = '_q_ds_'
 
@@ -30,7 +30,11 @@ export function provideDocStore () {
 
     toggleDark () {
       const val = store.state.value.dark = store.state.value.dark === false
-      $q.cookies.set('theme', val ? 'dark' : 'light', { path: '/', sameSite: 'Strict' })
+      $q.cookies.set(
+        'theme',
+        val ? 'dark' : 'light',
+        { path: '/', sameSite: 'Strict', expires: 400 }
+      )
     },
 
     toggleMenuDrawer () {
